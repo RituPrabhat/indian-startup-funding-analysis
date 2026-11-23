@@ -133,9 +133,3 @@ with st.expander("How to read this"):
         "name, product, revenue or team, so it cannot say how much one specific startup will raise."
     )
 
-# ---------- Footer ----------
-st.markdown(
-    f'<div class="footer">Built by <b>{AUTHOR}</b> &nbsp;·&nbsp; '
-    f'<a href="{REPO}" target="_blank">View code on GitHub</a><br>'
-    unsafe_allow_html=True,
-)
