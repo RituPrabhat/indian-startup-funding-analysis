@@ -137,6 +137,5 @@ with st.expander("How to read this"):
 st.markdown(
     f'<div class="footer">Built by <b>{AUTHOR}</b> &nbsp;·&nbsp; '
     f'<a href="{REPO}" target="_blank">View code on GitHub</a><br>'
-    "Educational project. Estimates come from historical data and are not financial advice.</div>",
     unsafe_allow_html=True,
 )
