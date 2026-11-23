@@ -127,7 +127,7 @@ with tab3:
         "datasets, cleaning them, analysing them with SQL and Python, building a Power BI "
         "dashboard, then training and deploying this model."
     )
-    st.write("**Built by:** Ritu Prabhat)
+    st.write("**Built by:** Ritu Prabhat")
     st.write("**Code, notebooks and data credits:** "
              "[GitHub repository](https://github.com/RituPrabhat/indian-startup-funding-analysis)")
     st.caption("Educational project, not financial advice.")
