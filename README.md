@@ -54,11 +54,11 @@ The totals are lower than the figures in industry reports because many deals in 
 
 | Funding by year | Top sectors |
 |---|---|
-| ![Funding by year](charts/01_funding_by_year.png) | ![Top sectors](charts/02_top_sectors.png) |
+| ![Funding by year](charts/charts/01_funding_by_year.png) | ![Top sectors](charts/charts/02_top_sectors.png) |
 
 | City share | Sector × year heatmap |
 |---|---|
-| ![City share](charts/03_city_share.png) | ![Heatmap](charts/07_sector_year_heatmap.png) |
+| ![City share](charts/charts/03_city_share.png) | ![Heatmap](charts/charts/07_sector_year_heatmap.png) |
 
 ## Dashboard
 
