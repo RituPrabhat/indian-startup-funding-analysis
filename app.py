@@ -1,10 +1,47 @@
 import json
 import joblib
 import pandas as pd
-import altair as alt
 import streamlit as st
 
 st.set_page_config(page_title="Startup Deal-Size Predictor", page_icon="📊", layout="centered")
+
+REPO = "https://github.com/RituPrabhat/indian-startup-funding-analysis"
+AUTHOR = "Ritu Prabhat"
+
+CSS = """
+#MainMenu, footer {visibility: hidden;}
+.block-container {max-width: 880px; padding-top: 1.5rem; padding-bottom: 3rem;}
+.hero {background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #4f46e5 100%);
+       border-radius: 18px; padding: 34px 36px; color: #ffffff; margin-bottom: 22px;
+       box-shadow: 0 10px 30px rgba(15,23,42,.35);}
+.hero h1 {font-size: 2.1rem; margin: 0 0 8px 0; padding: 0; color: #ffffff;
+          font-weight: 800; letter-spacing: -0.5px;}
+.hero p {color: #cbd5e1; font-size: 1.02rem; margin: 0 0 16px 0; line-height: 1.55;}
+.chip {display: inline-block; background: rgba(255,255,255,.12);
+       border: 1px solid rgba(255,255,255,.22); color: #ffffff; padding: 6px 14px;
+       border-radius: 999px; font-size: .82rem; margin: 4px 8px 0 0;}
+.section-title {font-size: 1.1rem; font-weight: 700; margin: 2px 0 10px 0;}
+div.stButton > button {border-radius: 10px;}
+.result {border-radius: 16px; padding: 26px 28px; margin-top: 18px; color: #f9fafb;
+         background: linear-gradient(135deg, #111827, #1f2937);
+         border-left: 8px solid var(--c); box-shadow: 0 8px 24px rgba(0,0,0,.3);}
+.result .kicker {text-transform: uppercase; letter-spacing: 1.5px; font-size: .75rem; color: #9ca3af;}
+.result .band {font-size: 2.5rem; font-weight: 800; color: var(--c); line-height: 1.1; margin: 4px 0 6px 0;}
+.result .range {font-size: 1.05rem; color: #e5e7eb; margin-bottom: 6px; font-weight: 600;}
+.result .sel {font-size: .85rem; color: #9ca3af; margin-bottom: 8px;}
+.result .desc {color: #cbd5e1; font-size: .95rem; line-height: 1.5;}
+.barrow {display: flex; align-items: center; margin: 12px 0;}
+.barlabel {width: 76px; font-size: .9rem; color: #e5e7eb;}
+.track {flex: 1; height: 12px; background: rgba(255,255,255,.1); border-radius: 999px; overflow: hidden;}
+.fill {height: 100%; border-radius: 999px;}
+.pct {width: 56px; text-align: right; font-weight: 700; font-size: .9rem; color: #f9fafb;}
+.note {margin-top: 14px; padding: 10px 14px; background: rgba(251,191,36,.12);
+       border: 1px solid rgba(251,191,36,.35); color: #fde68a; border-radius: 10px; font-size: .88rem;}
+.footer {text-align: center; color: #9ca3af; font-size: .85rem; margin-top: 34px;
+         padding-top: 18px; border-top: 1px solid rgba(128,128,128,.25);}
+.footer a {color: #818cf8; text-decoration: none;}
+"""
+st.markdown("<style>" + CSS + "</style>", unsafe_allow_html=True)
 
 
 @st.cache_resource
@@ -18,31 +55,35 @@ def load_assets():
 model, opts = load_assets()
 
 BANDS = ["Small", "Medium", "Large"]
-COLORS = ["#4C9BE8", "#F2A93B", "#E4572E"]
-MEANING = {
-    "Small": "Deals with this profile are usually **under $1M**, typical of very early rounds.",
-    "Medium": "Deals with this profile are usually **between $1M and $10M**.",
-    "Large": "Deals with this profile are usually **above $10M**, typical of later, bigger rounds.",
+COLORS = {"Small": "#4C9BE8", "Medium": "#F2A93B", "Large": "#E4572E"}
+RANGE = {"Small": "Under $1 million", "Medium": "$1 million to $10 million", "Large": "Over $10 million"}
+DESC = {
+    "Small": "Deals with this profile are usually small, typical of very early rounds.",
+    "Medium": "Deals with this profile usually fall in the middle range of funding rounds.",
+    "Large": "Deals with this profile are usually large, typical of later and bigger rounds.",
 }
 
-# show stages in their natural order instead of alphabetical
 STAGE_ORDER = ["Pre-Seed", "Seed/Angel", "Pre-Series A/B", "Series A", "Series B",
                "Series C", "Series D+", "Private Equity", "Unknown/Other"]
 stages = [s for s in STAGE_ORDER if s in opts["stages"]]
 stages += [s for s in opts["stages"] if s not in stages]
 
-st.title("📊 Indian Startup Deal-Size Predictor")
-st.caption("A machine learning model trained on about 4,300 real Indian startup funding deals (2015 to May 2022).")
+# ---------- Hero ----------
+st.markdown(
+    '<div class="hero">'
+    "<h1>Indian Startup Deal-Size Predictor</h1>"
+    "<p>Describe a funding round and get an estimate of how large it is likely to be, "
+    "learned from real Indian startup deals.</p>"
+    '<span class="chip">4,300+ real deals</span>'
+    '<span class="chip">2015 to May 2022</span>'
+    '<span class="chip">Random Forest model</span>'
+    "</div>",
+    unsafe_allow_html=True,
+)
 
-tab1, tab2, tab3 = st.tabs(["Predict", "Model performance", "About"])
-
-# ---------------- TAB 1 ----------------
-with tab1:
-    st.write(
-        "Choose the details of a funding deal. The model predicts whether the round is "
-        "**Small** (under $1M), **Medium** ($1M to $10M) or **Large** (over $10M)."
-    )
-
+# ---------- Inputs ----------
+with st.container(border=True):
+    st.markdown('<div class="section-title">Describe the deal</div>', unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     with c1:
         stage = st.selectbox("Funding stage", stages)
@@ -51,83 +92,51 @@ with tab1:
         city = st.selectbox("City", opts["cities"])
         year = st.slider("Year", opts["year_min"], opts["year_max"], opts["year_max"])
 
-    if st.button("Predict deal size", type="primary"):
-        row = pd.DataFrame([{"Sector": sector, "City_Group": city,
-                             "Stage_Std": stage, "Year": year}])
-        proba = pd.Series(model.predict_proba(row)[0], index=model.classes_)[BANDS]
-        best = proba.idxmax()
+# ---------- Prediction ----------
+row = pd.DataFrame([{"Sector": sector, "City_Group": city, "Stage_Std": stage, "Year": year}])
+proba = pd.Series(model.predict_proba(row)[0], index=model.classes_)[BANDS]
+best = proba.idxmax()
 
-        st.subheader(f"Predicted band: {best}")
-        st.write(MEANING[best])
+bars = "".join(
+    f'<div class="barrow"><div class="barlabel">{b}</div>'
+    f'<div class="track"><div class="fill" style="width:{proba[b] * 100:.1f}%;background:{COLORS[b]}"></div></div>'
+    f'<div class="pct">{proba[b]:.0%}</div></div>'
+    for b in BANDS
+)
+note = ""
+if proba.max() < 0.5:
+    note = ('<div class="note">The probabilities are close together, so the model is '
+            "not very sure about this one. Treat it as a rough estimate.</div>")
 
-        m1, m2, m3 = st.columns(3)
-        for col, band in zip((m1, m2, m3), BANDS):
-            col.metric(band, f"{proba[band]:.0%}")
+st.markdown(
+    f'<div class="result" style="--c:{COLORS[best]}">'
+    '<div class="kicker">Predicted deal size</div>'
+    f'<div class="band">{best}</div>'
+    f'<div class="range">{RANGE[best]}</div>'
+    f'<div class="sel">{stage} &nbsp;·&nbsp; {sector} &nbsp;·&nbsp; {city} &nbsp;·&nbsp; {year}</div>'
+    f'<div class="desc">{DESC[best]}</div>'
+    f'<div style="margin-top:16px">{bars}</div>'
+    f"{note}"
+    "</div>",
+    unsafe_allow_html=True,
+)
 
-        df = pd.DataFrame({"Band": BANDS, "Probability": proba.values})
-        chart = (
-            alt.Chart(df)
-            .mark_bar(cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
-            .encode(
-                x=alt.X("Band:N", sort=BANDS, axis=alt.Axis(labelAngle=0, title=None)),
-                y=alt.Y("Probability:Q", scale=alt.Scale(domain=[0, 1]),
-                        axis=alt.Axis(format="%", title="Probability")),
-                color=alt.Color("Band:N", scale=alt.Scale(domain=BANDS, range=COLORS), legend=None),
-                tooltip=["Band", alt.Tooltip("Probability:Q", format=".0%")],
-            )
-            .properties(height=300)
-        )
-        st.altair_chart(chart)
-
-        if proba.max() < 0.5:
-            st.warning("The model is not very sure here: the probabilities are spread across "
-                       "the bands, so treat this as a rough guess.")
-        st.caption("The model uses only stage, sector, city and year. It cannot see a company's "
-                   "name, product, revenue or team.")
-
-# ---------------- TAB 2 ----------------
-with tab2:
-    st.subheader("How well does it work?")
-    st.write("Scores on 867 deals the model never saw during training:")
-    st.table(pd.DataFrame({
-        "Model": ["Always guess 'Medium' (baseline)", "Logistic Regression", "Random Forest (used here)"],
-        "Accuracy": ["42.7%", "58.8%", "62.3%"],
-        "Macro-F1": ["0.20", "0.59", "0.63"],
-    }).set_index("Model"))
-
-    st.subheader("Where does it get things right and wrong?")
-    st.table(pd.DataFrame(
-        [[153, 75, 11], [104, 183, 83], [27, 27, 204]],
-        index=["True Large", "True Medium", "True Small"],
-        columns=["Predicted Large", "Predicted Medium", "Predicted Small"],
-    ))
+# ---------- Help ----------
+with st.expander("How to read this"):
     st.write(
-        "- Small deals are easiest to spot, and Large deals are decent.\n"
-        "- Medium is hardest, because it sits between the other two bands.\n"
-        "- Mistakes are mostly between neighbouring bands. Calling a Large deal Small is rare."
+        "The model looks at four details of a deal (funding stage, sector, city and year) "
+        "and compares them with thousands of past Indian startup deals. The bars show how "
+        "likely each size band is, and the tallest one is the prediction."
+    )
+    st.write(
+        "It estimates the **typical size of a round like this**. It does not know a company's "
+        "name, product, revenue or team, so it cannot say how much one specific startup will raise."
     )
 
-    st.subheader("What drives the prediction?")
-    st.write("**Funding stage** is by far the strongest signal (Seed/Angel rounds are mostly small). "
-             "Year comes next. Sector and city add little.")
-
-    st.subheader("Limitations")
-    st.write(
-        "- Trained only on deals that disclosed an amount (about 74% of the data).\n"
-        "- Random train/test split, not split by time, so the real-world score may be lower.\n"
-        "- The $1M and $10M band limits are a choice, not a rule.\n"
-        "- Covers 2015 to May 2022 only."
-    )
-
-# ---------------- TAB 3 ----------------
-with tab3:
-    st.subheader("About this project")
-    st.write(
-        "This app is the last step of an end-to-end data project: merging three public "
-        "datasets, cleaning them, analysing them with SQL and Python, building a Power BI "
-        "dashboard, then training and deploying this model."
-    )
-    st.write("**Built by:** Ritu Prabhat")
-    st.write("**Code, notebooks and data credits:** "
-             "[GitHub repository](https://github.com/RituPrabhat/indian-startup-funding-analysis)")
-    st.caption("Educational project, not financial advice.")
+# ---------- Footer ----------
+st.markdown(
+    f'<div class="footer">Built by <b>{AUTHOR}</b> &nbsp;·&nbsp; '
+    f'<a href="{REPO}" target="_blank">View code on GitHub</a><br>'
+    "Educational project. Estimates come from historical data and are not financial advice.</div>",
+    unsafe_allow_html=True,
+)
