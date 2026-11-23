@@ -77,7 +77,7 @@ All original data belongs to its authors and is used here for **educational purp
 | Period | Source | Notes |
 |---|---|---|
 | 2015 – 2017 | [Indian Startup Funding – Sudalai Rajkumar (Kaggle)](https://www.kaggle.com/datasets/sudalairajkumar/indian-startup-funding) | Covers Jan 2015 – Aug 2017 |
-| 2018 – 2021 | Yearly files `startup_funding2018.csv` to `startup_funding2021.csv` from a public GitHub repository: [add repo link here – confirm] | Data originally compiled from public startup-funding news |
+| 2018 – 2021 | Yearly files `startup_funding2018.csv` to `startup_funding2021.csv` from a public GitHub repository: [https://github.com/abhishekbuild/Streamlit-Indian-Startup-Funding] | Data originally compiled from public startup-funding news |
 | Jan – May 2022 | [Indian Startups – Funding & Investors Data [January-May 2022] (Kaggle, omkargowda)](https://www.kaggle.com/datasets/omkargowda/indian-startups-funding-data-januarymay-2022) – confirm link | Original data from [StartupTalky](https://startuptalky.com/indian-startups-funding-investors-data-2022/) |
 
 **Checked and rejected:**
